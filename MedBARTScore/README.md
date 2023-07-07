@@ -18,7 +18,7 @@ https://github.com/CogStack/MedCAT
 ```
 
 ## MedBARTScore
--  To run the MedBARTScore firstly we need to create the weights for each word/token in the document: 
+-  To run the MedBARTScore firstly we need to create the weights for each word/token in the documents: 
 ```
 python bartscore_create_medical_weight.py \
   --candidate=<candidate-file> \
