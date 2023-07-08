@@ -515,45 +515,6 @@ def sliding_window(model, x, attention_mask,model_max_lenght=512, all_layers=Fal
     return final_emb
         
 
-
-def sliding_window_old(model, x, attention_mask,model_max_lenght=512, all_layers=False):
-    final_emb = None
-    previous_window = 100
-    window_lenght = model_max_lenght - previous_window
-   
-    for i in range(0, x.size()[0]):
-        tensor_temp = x[i]
-        attention_mask_temp = attention_mask[i]
-        tensor_temp_size = tensor_temp.size()[0]
-        emb = None
-        if tensor_temp_size > model_max_lenght:
-             
-            index = 0
-            while index*window_lenght < tensor_temp_size:  
-                if index == 0:
-                    input = tensor_temp[index*window_lenght :(index+1)*window_lenght]
-                    attention = attention_mask_temp[index*window_lenght:(index+1)*window_lenght ]
-                else:
-                    input = tensor_temp[index*window_lenght -previous_window:(index+1)*window_lenght ]
-                    attention = attention_mask_temp[index*window_lenght-previous_window:(index+1)*window_lenght ]
-                with torch.no_grad():
-                    out = model(input.unsqueeze(0), attention_mask=attention.unsqueeze(0), output_hidden_states=all_layers)
-                if emb is None:
-                     emb = out[0]
-                else:
-                    emb = torch.cat([emb, out[0][0][previous_window:].unsqueeze(0)], dim=1 )
-                index = index + 1
-                
-        if emb is None:
-            with torch.no_grad():
-                out = model(tensor_temp.unsqueeze(0), attention_mask=attention_mask_temp.unsqueeze(0), output_hidden_states=all_layers)
-            emb = out[0]
-        if final_emb is None:
-            final_emb = emb
-        else:
-            final_emb = torch.cat([final_emb, emb], dim=0)
-    return final_emb
-
 def process(a, tokenizer=None, sliding_window_flag=False):
     if tokenizer is not None:
         a = sent_encode(tokenizer, a, sliding_window_flag=sliding_window_flag)
@@ -779,11 +740,11 @@ def greedy_cos_idf(
     R = (word_recall * recall_scale ).sum(dim=1) 
     F = 2 * P * R / (P + R)
 
-    hyp_zero_mask = hyp_masks.sum(dim=1).eq(2) # 
-    ref_zero_mask = ref_masks.sum(dim=1).eq(2)
+    # hyp_zero_mask = hyp_masks.sum(dim=1).eq(2) 
+    # ref_zero_mask = ref_masks.sum(dim=1).eq(2)
 
-    # hyp_zero_mask = hyp_masks.sum(dim=1).eq(0) # only have [cls] ans [seq] token if we remove the first token it should be zero
-    # ref_zero_mask = ref_masks.sum(dim=1).eq(0)
+    hyp_zero_mask = hyp_masks.sum(dim=1).eq(0) # only have [cls] ans [seq] token if we remove the first token it should be zero
+    ref_zero_mask = ref_masks.sum(dim=1).eq(0)
 
 
     if all_layers:

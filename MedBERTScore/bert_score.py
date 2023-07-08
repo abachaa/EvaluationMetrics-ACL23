@@ -91,7 +91,7 @@ def score(
 
     ref_group_boundaries = None
     if not isinstance(refs[0], str):
-        print(refs[0])
+        # print(refs[0])
         ref_group_boundaries = []
         ori_cands, ori_refs = cands, refs
         cands, refs = [], []
